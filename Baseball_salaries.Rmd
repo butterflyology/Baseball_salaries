@@ -1,0 +1,58 @@
+---
+title: "Baseball team salaries since 1985"
+author: "Chris Hamm"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+  keep_md: true
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.align = "center")
+```
+
+### I am learning to use `googleVis` to generate interactive HTML graphics. I thought looking at Major League Baseball team salaries over time would be a fun way to start.
+
+We will use three `packages`:
+
+* `tidyverse` - sort of a supergroup of packages, really
+* `Lahman` - which has a `Salary` table
+* `googleVis` which will write the HTML code to creat the graphic
+
+Load the libraries:
+```{r preliminaries, message = FALSE}
+library("tidyverse")
+library("Lahman")
+library("googleVis")
+```
+
+Let's look at the `Salaries` data object:
+```{r}
+dim(Salaries)
+glimpse(Salaries)
+```
+
+We can see that the data object contains salaries for every player by year. That isn't really what we want so we need to munge the data a bit.
+
+First, we need to group by `teamID` and `yearID`, then add up all the player salaries for each team by year. I'll also convert the salaries into millions of dollars. 
+
+```{r}
+Salary_team_year <- Salaries %>%
+  group_by(teamID, yearID) %>%
+  summarize(Team_Salary = sum(salary) / 1e6) %>%
+  ungroup
+
+glimpse(Salary_team_year)
+summary(Salary_team_year)
+```
+
+Cool, now our date are set up by team and year. 
+
+Now the `googgleVis` thingy:
+```{r}
+paid <- gvisMotionChart(Salary_team_year, "teamID", "yearID")
+# plot(paid) #uncomment this to run locally
+# print(paid, "chart") # this generates the HTML code
+```
+
+Have a look at the (admittedly) silly graphic [here](http://pizzabeerandscience.blogspot.com/2017/09/baseball-salaries-by-team-since-1985.html). Change the y-axis to time and color each team uniquely to see how salaries have changed. 
